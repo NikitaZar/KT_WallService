@@ -9,7 +9,7 @@ class WallServiceTest {
     fun add() {
         var post = Post()
         post = wallService.add(post)
-        assertEquals(post.id, 0)
+        assertNotEquals(post.id, 0)
     }
 
     @Test
