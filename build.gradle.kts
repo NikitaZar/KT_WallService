@@ -19,6 +19,7 @@ dependencies {
 
 tasks.test {
     useJUnit()
+    finalizedBy(tasks.jacocoTestReport)
 }
 
 tasks.withType<KotlinCompile>() {
