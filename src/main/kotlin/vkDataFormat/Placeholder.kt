@@ -1,0 +1,5 @@
+package vkDataFormat
+
+class Placeholder {
+
+}
