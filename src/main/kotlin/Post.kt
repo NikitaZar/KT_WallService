@@ -1,5 +1,5 @@
 import vkDataFormat.*
-import java.time.Duration
+import vkDataFormat.enums.PostType
 
 data class Post(
     val id: Int = 0,
@@ -17,6 +17,10 @@ data class Post(
     val reports: Reports = Reports(),
     val views: Views = Views(),
     val postType: PostType = PostType.POST,
+    val postSource: PostSource,
+    val geo: Geo,
+    val singerId: Int,
+    val copyHistory: Array<Post>?,
     val canPin: Boolean = false,
     val canDelete: Boolean = false,
     val canEdit: Boolean = false,

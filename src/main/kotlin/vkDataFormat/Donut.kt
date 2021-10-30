@@ -1,5 +1,7 @@
 package vkDataFormat
 
+import vkDataFormat.enums.EditMode
+
 data class Donut(
     val isDonut: Boolean = false,
     val paidDuration: Int = 0,
