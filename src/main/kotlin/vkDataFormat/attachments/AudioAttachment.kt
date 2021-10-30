@@ -3,7 +3,7 @@ package vkDataFormat.attachments
 data class AudioAttachment(
     override val typeAttachment: String = "Audio",
     override val id: Int = -1,
-    override val ownerId: Int = -1,
+    val ownerId: Int = -1,
     val artist: String = "",
     val title: String = "",
     val duration: Int = -1,

@@ -6,7 +6,7 @@ data class PhotoAttachment(
     override val typeAttachment: String = "Photo",
     override val id: Int = -1,
     val albumId: Int = -1,
-    override val ownerId: Int = -1,
+    val ownerId: Int = -1,
     val useId: Int = -1,
     val text: String = "",
     val date: Int = 0,
