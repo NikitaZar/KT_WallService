@@ -1,0 +1,4 @@
+package vkDataFormat
+
+interface DocPreview {
+}

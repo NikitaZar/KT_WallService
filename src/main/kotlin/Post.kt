@@ -1,4 +1,5 @@
 import vkDataFormat.*
+import vkDataFormat.attachments.Attachmentable
 import vkDataFormat.enums.PostType
 
 data class Post(
@@ -18,9 +19,10 @@ data class Post(
     val views: Views = Views(),
     val postType: PostType = PostType.POST,
     val postSource: PostSource = PostSource(),
+    val attachment: Attachmentable,
     val geo: Geo = Geo(),
     val singerId: Int = 0,
-    val copyHistory:Array<Post>? = arrayOf<Post>(),
+    val copyHistory: List<Post>? = listOf<Post>(),
     val canPin: Boolean = false,
     val canDelete: Boolean = false,
     val canEdit: Boolean = false,
