@@ -3,8 +3,8 @@ package vkDataFormat
 import vkDataFormat.enums.*
 
 data class PostSource(
-    val type: PostSourceType,
-    val platform: PostSourcePlatform,
-    val data: PostSourceData,
-    val url: String
+    val type: PostSourceType = PostSourceType.VK,
+    val platform: PostSourcePlatform = PostSourcePlatform.WPHONE,
+    val data: PostSourceData = PostSourceData.POLL,
+    val url: String = ""
 )
