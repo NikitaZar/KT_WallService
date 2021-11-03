@@ -1,6 +1,6 @@
 class WallService {
-    private val posts = emptyArray<Post>()
-    private val comments = emptyArray<Comment>()
+    private var posts = emptyArray<Post>()
+    private var comments = emptyArray<Comment>()
 
     fun add(post: Post): Post {
         val newPost: Post = when (posts.isEmpty()) {
@@ -8,7 +8,8 @@ class WallService {
             false -> post.copy(id = posts.last().id + 1)
         }
 
-        posts[posts.size] = newPost
+        posts = posts.plus(newPost)
+
         return newPost
     }
 
@@ -27,7 +28,7 @@ class WallService {
         if (posts.none { it.id == comment.id }) {
             throw PostNotFoundException()
         } else {
-            comments[comments.size] = comment
+            comments = comments.plus(comment)
         }
     }
 }
