@@ -13,7 +13,7 @@ data class Post(
     val replyOwnerId: Int = 0,
     val replyPostId: Int = 0,
     val friendsOnly: Boolean = false,
-    val comments: Comment = Comment(),
+    val comments: CommentInfo = CommentInfo(),
     val copyright: Copyright = Copyright(),
     val likes: Likes = Likes(),
     val reports: Reports = Reports(),
