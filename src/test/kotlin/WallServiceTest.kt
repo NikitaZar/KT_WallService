@@ -35,7 +35,6 @@ class WallServiceTest {
         wallService.add(Post())
         wallService.add(Post())
         wallService.createComment(Comment(2))
-        assertTrue(true)
     }
 
     @Test(expected = PostNotFoundException::class)
@@ -60,7 +59,6 @@ class WallServiceTest {
         wallService.reportComment(15, 2, 5)
         wallService.reportComment(16, 2, 6)
         wallService.reportComment(17, 2, 8)
-        assertTrue(true)
     }
 
     @Test(expected = PostNotFoundException::class)
