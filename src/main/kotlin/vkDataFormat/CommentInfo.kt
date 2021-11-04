@@ -1,6 +1,6 @@
 package vkDataFormat
 
-data class Comment (
+data class CommentInfo (
     val count:Int = 0,
     val canPost:Boolean = false,
     val groupsCanPost:Boolean = false,
