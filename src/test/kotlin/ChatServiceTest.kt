@@ -1,4 +1,7 @@
 import chatService.ChatService
+import exceptionClasses.ChatMessageNotFoundException
+import exceptionClasses.ChatNotFoundException
+import exceptionClasses.NoteNotFoundException
 import org.junit.Test
 
 import org.junit.Assert.*
@@ -155,7 +158,7 @@ class ChatServiceTest {
 
         chatService.deleteMessage(messageId - 1, chatId)
         chatService.deleteMessage(messageId, chatId)
-        val messages = chatService.getMessages(chatId, messageId, 2)
+        chatService.getMessages(chatId, messageId, 2)
         chatId = chatService.getChatId(userId1, userId2)
 
         assertEquals(chatId, -1)
@@ -167,10 +170,9 @@ class ChatServiceTest {
         val userId1 = 1
         val userId2 = 2
         val messageText = "Текст"
-        var messageId = -1
 
         for (i in 1..2) {
-            messageId = chatService.addMessage(userId1, userId2, messageText + i)
+            chatService.addMessage(userId1, userId2, messageText + i)
         }
         val chatId = chatService.getChatId(userId1, userId2)
 
@@ -179,7 +181,27 @@ class ChatServiceTest {
         val chats1 = chatService.getChats(userId1)
         val chats2 = chatService.getChats(userId2)
 
-        assertEquals(chats1.size,0)
-        assertEquals(chats2.size,0)
+        assertEquals(chats1.size, 0)
+        assertEquals(chats2.size, 0)
     }
+
+    @Test(expected = ChatNotFoundException::class)
+    fun getChat_chatNotFound() {
+        val chatService = ChatService()
+
+        chatService.getMessages(10, 1, 1)
+    }
+
+    @Test(expected = ChatMessageNotFoundException::class)
+    fun getMessage_ChatMessageNotFound() {
+        val chatService = ChatService()
+        val userId1 = 1
+        val userId2 = 2
+        val messageText = "Текст"
+
+        val messageId = chatService.addMessage(userId1, userId2, messageText)
+        val chatId = chatService.getChatId(userId1, userId2)
+        chatService.editMessage(chatId, messageId+1, messageText)
+    }
+
 }

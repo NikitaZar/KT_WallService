@@ -6,48 +6,35 @@ class ChatService {
     private val chats: MutableMap<Int, Chat> = mutableMapOf()
 
     private fun getChatByUsers(userId1: Int, userId2: Int): Chat {
-        return try {
-            chats.filter {
-                (it.value.userId1 == userId1 && it.value.userId2 == userId2) ||
-                        (it.value.userId1 == userId2 && it.value.userId2 == userId1)
-            }.values.first()
-        } catch (nsee: NoSuchElementException) {
-            addChat(userId1, userId2)
-        }
+        val userChats = chats.filter {
+            (it.value.userId1 == userId1 && it.value.userId2 == userId2) ||
+                    (it.value.userId1 == userId2 && it.value.userId2 == userId1)
+        }.values
+        return if (userChats.isNotEmpty()) userChats.first() else addChat(userId1, userId2)
     }
 
     fun getChatId(userId1: Int, userId2: Int): Int {
-        return try {
-            chats.filter {
-                ((it.value.userId1 == userId1 && it.value.userId2 == userId2) ||
-                        (it.value.userId1 == userId2 && it.value.userId2 == userId1))
-                        && !it.value.isDeleted
-            }.keys.first()
-        } catch (nsee: NoSuchElementException) {
-            -1
-        }
+        val chatsIds = chats.filter {
+            ((it.value.userId1 == userId1 && it.value.userId2 == userId2) ||
+                    (it.value.userId1 == userId2 && it.value.userId2 == userId1))
+                    && !it.value.isDeleted
+        }.keys
+        return if (chatsIds.isNotEmpty()) chatsIds.first() else -1
     }
 
     private fun getChat(chatId: Int): Chat {
-        try {
-            return if (!chats[chatId]!!.isDeleted) chats[chatId]!! else throw ChatNotFoundException(chatId)
-        } catch (npe: NullPointerException) {
-            throw ChatNotFoundException(chatId)
-        }
+        return chats[chatId] ?: throw ChatNotFoundException(chatId)
     }
 
     private fun getMessage(chat: Chat, messageId: Int): ChatMessage {
-        try {
-            return chat.messages[messageId]!!
-        } catch (npe: NullPointerException) {
-            throw ChatMessageNotFoundException(messageId)
-        }
+        return chat.messages[messageId] ?: throw ChatMessageNotFoundException(messageId)
     }
 
     private fun addChat(userId: Int, partnerId: Int): Chat {
         val chatId = if (chats.isEmpty()) 1 else chats.keys.last() + 1
-        chats[chatId] = Chat(userId, partnerId)
-        return chats[chatId]!!
+        val chat = Chat(userId, partnerId)
+        chats[chatId] = chat
+        return chat
     }
 
     fun addMessage(userId: Int, partnerId: Int, messageText: String): Int {
@@ -78,7 +65,7 @@ class ChatService {
             (index >= lastMessageIndex) && (index < lastMessageIndex + messageCount)
         }
         val messagesMap = chat.messages.filter { messagesIds.contains(it.key) }
-        var messages = ArrayList(messagesMap.values.filter { !it.isDeleted })
+        val messages = ArrayList(messagesMap.values.filter { !it.isDeleted })
         messages.forEach { it.isUnread = false }
 
         if (messages.isEmpty()) deleteChat(chatId)
