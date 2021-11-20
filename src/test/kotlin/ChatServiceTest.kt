@@ -8,7 +8,6 @@ import org.junit.Assert.*
 
 class ChatServiceTest {
 
-
     @Test
     fun addMessage_first_successful() {
         val chatService = ChatService()
@@ -63,14 +62,18 @@ class ChatServiceTest {
         chatService.addMessage(userId1, userId2, messageText)
         chatService.addMessage(userId2, userId3, messageText)
         chatService.addMessage(userId1, userId3, messageText)
+        chatService.addMessage(userId2, userId1, messageText)
+        chatService.addMessage(userId3, userId1, messageText)
+        chatService.addMessage(userId4, userId1, messageText)
+        chatService.addMessage(userId4, userId1, messageText)
 
         val unreadChats1 = chatService.getUnreadChatsCount(userId1)
         val unreadChats2 = chatService.getUnreadChatsCount(userId2)
         val unreadChats3 = chatService.getUnreadChatsCount(userId3)
         val unreadChats4 = chatService.getUnreadChatsCount(userId4)
 
-        assertEquals(unreadChats1, 2)
-        assertEquals(unreadChats2, 2)
+        assertEquals(unreadChats1, 3)
+        assertEquals(unreadChats2, 1)
         assertEquals(unreadChats3, 2)
         assertEquals(unreadChats4, 0)
     }
@@ -111,7 +114,7 @@ class ChatServiceTest {
             messageId = chatService.addMessage(userId1, userId2, messageText + i)
         }
         val chatId = chatService.getChatId(userId1, userId2)
-        val messages = chatService.getMessages(chatId, messageId - 1, 2)
+        val messages = chatService.getMessages(chatId, messageId - 2, 2)
 
         assertEquals(messages.size, 2)
         assertEquals(messages[0].messageText, messageText + 2)
@@ -155,10 +158,8 @@ class ChatServiceTest {
 
         var chatId = chatService.getChatId(userId1, userId2)
 
-
         chatService.deleteMessage(messageId - 1, chatId)
         chatService.deleteMessage(messageId, chatId)
-        chatService.getMessages(chatId, messageId, 2)
         chatId = chatService.getChatId(userId1, userId2)
 
         assertEquals(chatId, -1)
