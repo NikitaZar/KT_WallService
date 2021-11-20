@@ -3,62 +3,54 @@ package chatService
 import exceptionClasses.*
 
 class ChatService {
+
+    companion object {
+        const val START_ID = 1
+        const val NOT_FOUND_ID = -1
+    }
+
     private val chats: MutableMap<Int, Chat> = mutableMapOf()
 
-    private fun getChatByUsers(userId1: Int, userId2: Int): Chat {
-        val userChats = chats.filter {
-            (it.value.userId1 == userId1 && it.value.userId2 == userId2) ||
-                    (it.value.userId1 == userId2 && it.value.userId2 == userId1)
-        }.values
-        return if (userChats.isNotEmpty()) userChats.first() else addChat(userId1, userId2)
-    }
+    private fun isChatOfUsers(chat: Chat, userId1: Int, userId2: Int) =
+        (chat.userId1 == userId1 && chat.userId2 == userId2) || (chat.userId1 == userId2 && chat.userId2 == userId1)
 
-    fun getChatId(userId1: Int, userId2: Int): Int {
-        val chatsIds = chats.filter {
-            ((it.value.userId1 == userId1 && it.value.userId2 == userId2) ||
-                    (it.value.userId1 == userId2 && it.value.userId2 == userId1))
-                    && !it.value.isDeleted
-        }.keys
-        return if (chatsIds.isNotEmpty()) chatsIds.first() else -1
-    }
+    private fun isUserJoinChar(chat: Chat, userId: Int) = (chat.userId1 == userId || chat.userId2 == userId)
 
-    private fun getChat(chatId: Int): Chat {
-        return chats[chatId] ?: throw ChatNotFoundException(chatId)
-    }
+    private fun getChatByUsers(userId1: Int, userId2: Int) =
+        chats.filter { isChatOfUsers(it.value, userId1, userId2) && !it.value.isDeleted }.values
+            .let { if (it.isNotEmpty()) it.first() else addChat(userId1, userId2) }
 
-    private fun getMessage(chat: Chat, messageId: Int): ChatMessage {
-        return chat.messages[messageId] ?: throw ChatMessageNotFoundException(messageId)
-    }
+    fun getChatId(userId1: Int, userId2: Int) =
+        chats.filter { isChatOfUsers(it.value, userId1, userId2) && !it.value.isDeleted }.keys
+            .let { if (it.isNotEmpty()) it.first() else NOT_FOUND_ID }
 
-    private fun addChat(userId: Int, partnerId: Int): Chat {
-        val chatId = if (chats.isEmpty()) 1 else chats.keys.last() + 1
-        val chat = Chat(userId, partnerId)
-        chats[chatId] = chat
-        return chat
-    }
+    private fun getChat(chatId: Int) = chats[chatId] ?: throw ChatNotFoundException(chatId)
 
-    fun addMessage(userId: Int, partnerId: Int, messageText: String): Int {
-        val chat = getChatByUsers(userId, partnerId)
-        val messageId = if (chat.messages.isEmpty()) 1 else chat.messages.keys.last() + 1
-        chat.messages[messageId] = ChatMessage(userId, messageText)
-        return messageId
-    }
+    private fun getMessage(chat: Chat, messageId: Int) =
+        chat.messages[messageId] ?: throw ChatMessageNotFoundException(messageId)
 
-    fun editMessage(chatId: Int, messageId: Int, newMessageText: String): Boolean {
-        getMessage(getChat(chatId), messageId).messageText = newMessageText
-        return true
-    }
+    private fun addChat(userId: Int, partnerId: Int) =
+        Chat(userId, partnerId).let { chat ->
+            chats[if (chats.isEmpty()) START_ID else chats.keys.last() + 1] = chat; chat
+        }
+
+    fun addMessage(userId: Int, partnerId: Int, messageText: String) =
+        getChatByUsers(userId, partnerId).let {
+            val messageId = if (it.messages.isEmpty()) START_ID else it.messages.keys.last() + 1
+            it.messages[messageId] = ChatMessage(userId, messageText)
+            messageId
+        }
+
+    fun editMessage(chatId: Int, messageId: Int, newMessageText: String) =
+        getMessage(getChat(chatId), messageId).let { it.messageText = newMessageText; true }
 
     fun getUnreadChatsCount(userId: Int) = chats.count { chat ->
-        chat.value.messages.values.find { it.isUnread } != null &&
-                (chat.value.userId1 == userId || chat.value.userId2 == userId)
+        chat.value.messages.values.find { it.isUnread } != null && isUserJoinChar(chat.value, userId) //TODO
     }
 
-    fun getChats(userId: Int) = chats.values.filter { chat ->
-        !chat.isDeleted && (chat.userId1 == userId || chat.userId2 == userId)
-    }
+    fun getChats(userId: Int) = chats.values.filter { chat -> !chat.isDeleted && isUserJoinChar(chat, userId) }
 
-    fun getMessages(chatId: Int, lastMessageId: Int, messageCount: Int): List<ChatMessage> {
+    fun getMessages(chatId: Int, lastMessageId: Int, messageCount: Int): List<ChatMessage> { //TODO
         val chat = getChat(chatId)
         val lastMessageIndex = chat.messages.keys.indexOfLast { it == lastMessageId - 1 }
         val messagesIds = chat.messages.keys.filterIndexed { index, _ ->
@@ -73,11 +65,7 @@ class ChatService {
         return messages
     }
 
-    fun deleteMessage(messageId: Int, chatId: Int) {
-        getMessage(getChat(chatId), messageId).isDeleted = true
-    }
+    fun deleteMessage(messageId: Int, chatId: Int) = getMessage(getChat(chatId), messageId).let { it.isDeleted = true }
 
-    fun deleteChat(chatId: Int) {
-        getChat(chatId).isDeleted = true
-    }
+    fun deleteChat(chatId: Int) = getChat(chatId).let { it.isDeleted = true }
 }
