@@ -26,9 +26,6 @@ class ChatService {
 
     private fun getChat(chatId: Int) = chats[chatId] ?: throw ChatNotFoundException(chatId)
 
-    private fun getMessage(chat: Chat, messageId: Int) =
-        chat.messages[messageId] ?: throw ChatMessageNotFoundException(messageId)
-
     private fun addChat(userId: Int, partnerId: Int) =
         Chat(userId, partnerId).let {
             val chatId = chats.keys.lastOrNull()?.plus(1) ?: START_ID
@@ -36,40 +33,42 @@ class ChatService {
             it
         }
 
-    fun addMessage(userId: Int, partnerId: Int, messageText: String) =
-        getChatByUsers(userId, partnerId).let {
-            val messageId = it.messages.keys.lastOrNull()?.plus(1) ?: START_ID
-            it.messages[messageId] = ChatMessage(userId, messageText)
-            messageId
-        }
-
-    fun editMessage(chatId: Int, messageId: Int, newMessageText: String) =
-        getMessage(getChat(chatId), messageId).let { it.messageText = newMessageText; true }
-
     fun getUnreadChatsCount(userId: Int) =
         chats.values
             .filter { !it.isDeleted }
             .filter { isUserJoinChar(it, userId) }
             .count { chat ->
-                chat.messages.values.any { message -> message.isUnread && message.authorId != userId }
+                chat.messages.any { message -> message.isUnread && message.authorId != userId }
             }
 
     fun getChats(userId: Int) = chats.values.filter { chat -> !chat.isDeleted && isUserJoinChar(chat, userId) }
 
+    fun deleteChat(chatId: Int) = getChat(chatId).let { it.isDeleted = true }
+
+    private fun getMessage(chat: Chat, messageId: Int) =
+        chat.messages.find { it.messageId == messageId } ?: throw ChatMessageNotFoundException(messageId)
+
+    fun addMessage(userId: Int, partnerId: Int, messageText: String) =
+        getChatByUsers(userId, partnerId).let { chat ->
+            chat.lastMessageId = if (chat.messages.isEmpty()) START_ID else chat.lastMessageId + 1
+            chat.messages.add(ChatMessage(chat.lastMessageId, userId, messageText))
+            chat.lastMessageId
+        }
+
+    fun editMessage(chatId: Int, messageId: Int, newMessageText: String) =
+        getMessage(getChat(chatId), messageId).let { it.messageText = newMessageText; true }
+
     fun getMessages(chatId: Int, lastMessageId: Int, messageCount: Int) =
         getChat(chatId).messages
-            .filter { it.key >= lastMessageId }
-            .values.asSequence()
+            .filter { it.messageId >= lastMessageId }
+            .asSequence()
             .filter { !it.isDeleted }
             .take(messageCount)
             .toList()
             .onEach { it.isUnread = false }
 
-
     fun deleteMessage(messageId: Int, chatId: Int) {
         getMessage(getChat(chatId), messageId).isDeleted = true
-        getChat(chatId).messages.values.find { !it.isDeleted } ?: deleteChat(chatId)
+        getChat(chatId).messages.find { !it.isDeleted } ?: deleteChat(chatId)
     }
-
-    fun deleteChat(chatId: Int) = getChat(chatId).let { it.isDeleted = true }
 }
